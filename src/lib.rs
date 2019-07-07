@@ -7,7 +7,7 @@
 //! 
 //! ## Example
 //! ```
-//! # use std::io::Cursor;
+//! use std::io::Cursor;
 //! use bin_io::{ boilerplate, seq, read, write };
 //! use bin_io::numbers::{ be_u8, be_u16 };
 //! 
