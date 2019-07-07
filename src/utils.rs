@@ -11,7 +11,7 @@ use std::convert::{ TryInto, TryFrom };
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::numbers::{ be_u8 };
 /// use bin_io::{ write, bind, seq };
 /// 
@@ -60,7 +60,7 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: PartialEq + Clone {
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::numbers::{ be_u8 };
 /// use bin_io::{ write, skip, seq };
 /// 
@@ -103,7 +103,7 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: Clone {
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::numbers::{ be_u8 };
 /// use bin_io::{ write, count, seq };
 /// 
@@ -186,7 +186,7 @@ where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: From<I> + Into<I> {
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::numbers::{ be_u8 };
 /// use bin_io::{ read, optional, seq };
 /// 
@@ -245,7 +245,7 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I> {
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::numbers::{ be_u8 };
 /// use bin_io::{ write, try_cast, seq };
 /// 

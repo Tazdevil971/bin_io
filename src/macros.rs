@@ -16,7 +16,7 @@
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::{ seq, skip, count, bind, read };
 /// use bin_io::numbers::{ be_u8, be_u16, le_u16, be_i32 };
 /// use bin_io::strings::null_utf16;
@@ -115,7 +115,7 @@ macro_rules! seq {
 /// 
 /// # Examples
 /// ```
-/// # use std::io::{ Read, Write };
+/// use std::io::{ Read, Write };
 /// 
 /// use bin_io::{ ReadFn, WriteFn };
 /// use bin_io::numbers::be_u8;

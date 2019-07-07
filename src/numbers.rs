@@ -2,7 +2,7 @@
 //! 
 //! # Examples
 //! ```
-//! # use std::io::Cursor;
+//! use std::io::Cursor;
 //! use bin_io::numbers::{ le_f32 };
 //! use bin_io::{ read, write };
 //! 

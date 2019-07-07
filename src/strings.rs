@@ -20,7 +20,7 @@ use byteorder::{ ReadBytesExt, WriteBytesExt, BigEndian };
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::strings::null_ascii;
 /// use bin_io::read;
 /// 
@@ -66,7 +66,7 @@ pub fn null_ascii<R: Read, W: Write>()
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::strings::len_ascii;
 /// use bin_io::read;
 /// 
@@ -107,7 +107,7 @@ pub fn len_ascii<R: Read, W: Write>(len: usize)
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::strings::null_utf8;
 /// use bin_io::read;
 /// 
@@ -151,7 +151,7 @@ pub fn null_utf8<R: Read, W: Write>()
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::strings::len_utf8;
 /// use bin_io::read;
 /// 
@@ -186,7 +186,7 @@ pub fn len_utf8<R: Read, W: Write>(len: usize)
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::strings::null_utf16;
 /// use bin_io::read;
 /// 
@@ -227,7 +227,7 @@ pub fn null_utf16<R: Read, W: Write>()
 /// 
 /// # Examples
 /// ```
-/// # use std::io::Cursor;
+/// use std::io::Cursor;
 /// use bin_io::strings::len_utf16;
 /// use bin_io::read;
 /// 
