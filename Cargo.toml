@@ -7,6 +7,7 @@ description = "Framework for reading and writing to binary files"
 license = "MIT"
 keywords = ["encoding", "decoding", "serialization", "deserializaton", "binary"]
 repository = "https://github.com/Tazdevil971/bin_io"
+documentation = "https://docs.rs/bin_io"
 readme = "README.md"
 
 [dependencies]
