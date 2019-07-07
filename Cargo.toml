@@ -5,7 +5,9 @@ authors = ["Davide Mor <tazdevil971@gmail.com>"]
 edition = "2018"
 description = "Framework for reading and writing to binary files"
 license = "MIT"
-keywords = ["parser", "parsing", "serialization", "serializer", "binary"]
+keywords = ["encoding", "decoding", "serialization", "deserializaton", "binary"]
+repository = "https://github.com/Tazdevil971/bin_io"
+readme = "README.md"
 
 [dependencies]
 byteorder = "1.3"
