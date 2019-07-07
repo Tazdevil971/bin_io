@@ -14,7 +14,7 @@ use std::io::Cursor;
 use bin_io::{ boilerplate, seq, read, write };
 use bin_io::numbers::{ be_u8, be_u16 };
 
-# #[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 struct Thing {
     a: u8,
     b: u16
