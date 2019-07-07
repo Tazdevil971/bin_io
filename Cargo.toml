@@ -1,5 +1,5 @@
 [package]
-name = "bin-io"
+name = "bin_io"
 version = "0.1.0"
 authors = ["Davide Mor <tazdevil971@gmail.com>"]
 edition = "2018"
