@@ -21,17 +21,19 @@
 /// use bin_io::numbers::{ be_u8, be_u16, le_u16, be_i32 };
 /// use bin_io::strings::null_utf16;
 /// 
-/// struct Foo {
-///     a: u8,
-///     b: u16,
-///     c: Vec<i32>,
-///     d: String,
+/// mod bar {
+///     pub struct Foo {
+///         pub a: u8,
+///         pub b: u16,
+///         pub c: Vec<i32>,
+///         pub d: String,
+///     }
 /// }
 /// 
 /// let tuple = seq!(
 ///     // Here we specify wich variables 
 ///     // are inside Foo
-///     Foo { a, b, c, d },
+///     bar::Foo { a, b, c, d },
 /// 
 ///     // And now we start the definition
 ///     bind(be_u8(), 0x50) =>
@@ -50,62 +52,128 @@
 /// let test = read(r, tuple)
 ///     .unwrap();
 /// ```
+/// 
+/// ```
+/// use std::io::Cursor;
+/// use bin_io::{ seq, read , bind };
+/// use bin_io::numbers::{ be_i8, be_i16, be_i32, be_i64 };
+/// 
+/// mod foo {
+///     pub struct Bar1;
+///     pub struct Bar2(pub i32);
+///     pub struct Bar3 { pub a: i64 }
+/// }
+/// 
+/// // seq! is compatible with multiple data structures
+/// let void = seq!(
+///     (),
+///     bind(be_i8(), -20) =>
+/// );
+/// 
+/// let bar1 = seq!(
+///     foo::Bar1,
+///     bind(be_i16(), 30) =>
+/// );
+/// 
+/// let bar2 = seq!(
+///     foo::Bar2(a),
+///     a: be_i32() =>
+/// );
+/// 
+/// let bar3 = seq!(
+///     foo::Bar3 { a },
+///     a: be_i64() =>
+/// );
+/// 
+/// # let vec = vec![0; 15];
+/// # let mut cursor = Cursor::new(vec);
+/// # let a = read(&mut cursor, void);
+/// # let b = read(&mut cursor, bar1);
+/// # let c = read(&mut cursor, bar2);
+/// # let d = read(&mut cursor, bar3);
+/// ```
 #[macro_export]
 macro_rules! seq {
-    ($ty:ident { $($field:ident),* }, $($rest:tt)*) => {
+    ($($ty:ident)::+ { $($field:ident),* }, $($rest:tt)*) => {
         (|r: &mut _| {
-            $crate::seq!(__impl_r $ty {
+            $crate::seq!(__impl r $($ty)::* {
                 $($field),*
             }, r, $($rest)*)
         },
         |w: &mut _, v: _| {
-            let $ty {
+            let $($ty)::* {
                 $($field),*
             } = v;
-            $crate::seq!(__impl_w w, $($rest)*);
+            $crate::seq!(__impl w w, $($rest)*);
+            Ok(())
+        })
+    };
+
+    ($($ty:ident)::+ ( $($field:ident),* ), $($rest:tt)*) => {
+        (|r: &mut _| {
+            $crate::seq!(__impl r $($ty)::* (
+                $($field),*
+            ), r, $($rest)*)
+        },
+        |w: &mut _, v: _| {
+            let $($ty)::* (
+                $($field),*
+            ) = v;
+            $crate::seq!(__impl w w, $($rest)*);
+            Ok(())
+        })
+    };
+
+    ($($ty:ident)::+, $($rest:tt)*) => {
+        (|r: &mut _| {
+            $crate::seq!(__impl r $($ty)::*, r, $($rest)*)
+        },
+        |w: &mut _, v: _| {
+            let $($ty)::* = v;
+            $crate::seq!(__impl w w, $($rest)*);
             Ok(())
         })
     };
 
     ((), $($rest:tt)*) => {
         (|r: &mut _| {
-            $crate::seq!(__impl_r (), r, $($rest)*)
+            $crate::seq!(__impl r (), r, $($rest)*)
         },
         |w: &mut _, v: _| {
-            $crate::seq!(__impl_w w, $($rest)*);
+            $crate::seq!(__impl w w, $($rest)*);
             Ok(())
         })
     };
 
-    (__impl_r $e:expr, $r:ident, ) => { 
+    (__impl r $e:expr, $r:ident, ) => { 
         Ok($e)
     };
-    (__impl_r $e:expr, $r:ident, $name:ident : $expr:expr => $($rest:tt)*) => {
+    (__impl r $e:expr, $r:ident, $name:ident : $expr:expr => $($rest:tt)*) => {
         {
             let $name = $crate::read($r, $expr)?;
-            $crate::seq!(__impl_r $e, $r, $($rest)*)
+            $crate::seq!(__impl r $e, $r, $($rest)*)
         }
     };
 
-    (__impl_r $e:expr, $r:ident, $expr:expr => $($rest:tt)*) => {
+    (__impl r $e:expr, $r:ident, $expr:expr => $($rest:tt)*) => {
         {
             let _: () = $crate::read($r, $expr)?;
-            $crate::seq!(__impl_r $e, $r, $($rest)*)
+            $crate::seq!(__impl r $e, $r, $($rest)*)
         }
     };
 
-    (__impl_w $w:ident, ) => {};
-    (__impl_w $w:ident, $name:ident : $expr:expr => $($rest:tt)*) => {
+    (__impl w $w:ident, ) => {};
+    (__impl w $w:ident, $name:ident : $expr:expr => $($rest:tt)*) => {
         {
             $crate::write($w, $name, $expr)?;
-            $crate::seq!(__impl_w $w, $($rest)*);
+            $crate::seq!(__impl w $w, $($rest)*);
         }
     };
 
-    (__impl_w $w:ident, $expr:expr => $($rest:tt)*) => {
+    (__impl w $w:ident, $expr:expr => $($rest:tt)*) => {
         {
             $crate::write($w, (), $expr)?;
-            $crate::seq!(__impl_w $w, $($rest)*);
+            $crate::seq!(__impl w $w, $($rest)*);
         }
     };
 }
