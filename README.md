@@ -1,4 +1,8 @@
 # bin_io
+
+[![LICENSE](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Crates.io Version](https://img.shields.io/crates/v/bin_io.svg)](https://crates.io/crates/bin_io)
+
 `bin_io` is a crate inspired greatly by `nom` and
 other parser combinator libraries.
 But `bin_io` differs from those crates since
