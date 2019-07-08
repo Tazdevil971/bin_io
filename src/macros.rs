@@ -52,10 +52,10 @@
 /// let test = read(r, tuple)
 ///     .unwrap();
 /// ```
-/// 
+/// `seq!` is compatible with multiple data structures 
 /// ```
 /// use std::io::Cursor;
-/// use bin_io::{ seq, read , bind };
+/// use bin_io::{ seq, read, bind };
 /// use bin_io::numbers::{ be_i8, be_i16, be_i32, be_i64 };
 /// 
 /// mod foo {
@@ -64,7 +64,6 @@
 ///     pub struct Bar3 { pub a: i64 }
 /// }
 /// 
-/// // seq! is compatible with multiple data structures
 /// let void = seq!(
 ///     (),
 ///     bind(be_i8(), -20) =>
@@ -91,6 +90,36 @@
 /// # let b = read(&mut cursor, bar1);
 /// # let c = read(&mut cursor, bar2);
 /// # let d = read(&mut cursor, bar3);
+/// ```
+/// Sometimes you need extra variables during reading, but you don't
+/// want them in your final struct (imagine length/value based formats), 
+/// with `seq!` you can do that too!
+/// ```
+/// use std::io::Cursor;
+/// use bin_io::{ seq, read, count };
+/// use bin_io::numbers::{ be_u8, be_i16 };
+/// 
+/// #[derive(Debug, PartialEq, Eq)]
+/// struct Foo {
+///     a: Vec<i16>
+/// }
+/// 
+/// let tuple = seq!(
+///     // Capture everything normally
+///     Foo { a },
+///     // Give the field a default value or some expression to initialize it
+///     // Remember: this value is only used during writing and not reading
+///     length: be_u8(), a.len() as u8 =>
+///     a: count(be_i16(), length as _) =>
+/// );
+/// 
+/// let vec = vec![ 0x2, 0x0, 0x50, 0x0, 0x60 ];
+/// let mut cursor = Cursor::new(vec);
+/// 
+/// let foo = read(&mut cursor, tuple)
+///     .unwrap();
+/// 
+/// assert_eq!(foo, Foo { a: vec![ 0x50, 0x60 ] })
 /// ```
 #[macro_export]
 macro_rules! seq {
@@ -148,9 +177,17 @@ macro_rules! seq {
     (__impl r $e:expr, $r:ident, ) => { 
         Ok($e)
     };
+
     (__impl r $e:expr, $r:ident, $name:ident : $expr:expr => $($rest:tt)*) => {
         {
             let $name = $crate::read($r, $expr)?;
+            $crate::seq!(__impl r $e, $r, $($rest)*)
+        }
+    };
+    
+    (__impl r $e:expr, $r:ident, $name:ident : $expr:expr, $def:expr => $($rest:tt)*) => {
+        {
+            let $name = $crate::read($r, $expr)?; 
             $crate::seq!(__impl r $e, $r, $($rest)*)
         }
     };
@@ -163,8 +200,17 @@ macro_rules! seq {
     };
 
     (__impl w $w:ident, ) => {};
+
     (__impl w $w:ident, $name:ident : $expr:expr => $($rest:tt)*) => {
         {
+            $crate::write($w, $name, $expr)?;
+            $crate::seq!(__impl w $w, $($rest)*);
+        }
+    };
+
+    (__impl w $w:ident, $name:ident : $expr:expr, $def:expr => $($rest:tt)*) => {
+        {
+            let $name = $def;
             $crate::write($w, $name, $expr)?;
             $crate::seq!(__impl w $w, $($rest)*);
         }
