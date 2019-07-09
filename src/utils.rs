@@ -99,7 +99,9 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: Clone {
 /// When is writing, the function will only check
 /// if the supplied value is the same as the array
 /// length, and will panic if there is a mismatch.
-/// So remember to initialize everything correctly!.
+/// So remember to initialize everything correctly, 
+/// or use a default value (see `seq!` documentation 
+/// for details)!
 /// 
 /// # Examples
 /// ```
@@ -182,7 +184,9 @@ where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: From<I> + Into<I> {
 /// When is writing, the function will only check
 /// if the supplied boolean is coherent with the 
 /// `Option`, and will panic if there is a mismatch.
-/// So remember to initialize everything correctly!
+/// So remember to initialize everything correctly,
+/// or use a default value (see `seq!` documentation 
+/// for details)!
 /// 
 /// # Examples
 /// ```
