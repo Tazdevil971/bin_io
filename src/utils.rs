@@ -9,6 +9,13 @@ use std::convert::{ TryInto, TryFrom };
 /// This is an helper function used in conjuction
 /// with `seq!`.
 /// 
+/// ## Reading
+/// The function checks the read value agains the
+/// input value.
+/// 
+/// ## Writing
+/// The function writes the input value.
+/// 
 /// # Examples
 /// ```
 /// use std::io::Cursor;
@@ -53,6 +60,13 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: PartialEq + Clone {
 /// This is an helper function used in conjuction
 /// with `seq!`.
 /// 
+/// ## Reading
+/// The function just reads the value and then
+/// discards the value.
+/// 
+/// ## Writing
+/// The function writes the input value.
+/// 
 /// # Remarks
 /// This function is identical to `bind` with
 /// the exception that it won't check the read
@@ -94,6 +108,16 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: Clone {
 }
 
 /// Reads/Writes a series of values.
+/// 
+/// ## Reading
+/// The function reads a number of values using
+/// the passed parser, the number of values read
+/// depends on the input value.
+/// 
+/// ## Writing
+/// The function checks the size of the array against
+/// the input value, and panics if there is a mismatch.
+/// Then writes the whole array.
 /// 
 /// # Panics
 /// When is writing, the function will only check
@@ -155,6 +179,12 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I> {
 /// This is an helper function used in conjuction
 /// with `seq!`.
 /// 
+/// ## Reading
+/// The function casts O into I.
+/// 
+/// ## Writing
+/// The function casts I into O.
+/// 
 /// # Remarks
 /// Since this cast is bidirectional, each type must
 /// be constructible from the other. Therefore remember
@@ -179,6 +209,15 @@ where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: From<I> + Into<I> {
 /// 
 /// This is an helper function used in conjuction
 /// with `seq!`.
+/// 
+/// ## Reading
+/// The function reads a value using the passed parser, 
+/// the value is read only if the input value is true.
+/// 
+/// ## Writing
+/// The function checks that the `Option` matches the
+/// input value and panics otherwise. Then it writes the 
+/// value only if present.
 /// 
 /// # Panics
 /// When is writing, the function will only check
@@ -241,6 +280,12 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I> {
 /// with `seq!`.
 /// 
 /// This is the `TryFrom` variant of `cast`.
+/// 
+/// ## Reading
+/// The function tries to casts O into I.
+/// 
+/// ## Writing
+/// The function tries to casts I into O.
 /// 
 /// # Remarks
 /// Since this cast is bidirectional, each type must

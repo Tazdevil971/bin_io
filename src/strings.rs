@@ -15,8 +15,8 @@ use byteorder::{ ReadBytesExt, WriteBytesExt, BigEndian };
 /// 
 /// # Panics
 /// If the input string is not ascii (*NOT* if the string
-/// has just been read is not ascii, in that case it will 
-/// just return an error) the function panics.
+/// that has just been read is not ascii, in that case it 
+/// will just return an error) the function panics.
 /// 
 /// # Examples
 /// ```
@@ -61,8 +61,8 @@ pub fn null_ascii<R: Read, W: Write>()
 /// 
 /// # Panics
 /// If the input string is not ascii (*NOT* if the string
-/// has just been read is not ascii, in that case it will 
-/// just return an error) the function panics.
+/// that has just been read is not ascii, in that case it 
+/// will just return an error) the function panics.
 /// 
 /// # Examples
 /// ```
