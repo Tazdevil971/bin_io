@@ -295,3 +295,51 @@ where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: TryFrom<I> + TryInto<I> {
         )
     })
 }
+
+/// Converts a value to a boolean.
+/// 
+/// # Examples
+/// ```
+/// use std::io::Cursor;
+/// use bin_io::numbers::{ be_u8 };
+/// use bin_io::{ read, boolean, seq };
+/// 
+/// let vec = vec![ 0x0 ];
+/// let mut cursor = Cursor::new(vec);
+/// 
+/// struct Thing {
+///     a: bool
+/// }
+/// 
+/// let a = seq!(
+///     Thing { a },
+///     a: boolean(be_u8(), 0x1, 0x0) =>
+/// );
+/// 
+/// let thing = read(&mut cursor, a)
+///     .unwrap();
+/// 
+/// assert_eq!(thing.a, false);
+/// ```
+pub fn boolean<R: Read, W: Write, Rf, Wf, I>(f: (Rf, Wf), true_val: I, false_val: I)
+-> (impl ReadFn<R, bool>, impl WriteFn<W, bool>)
+where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: PartialEq + Clone {
+
+    let (rf, wf) = f;
+    let (rtrue_val, wtrue_val) = (true_val.clone(), true_val);
+    let (rfalse_val, wfalse_val) = (false_val.clone(), false_val);
+
+    (move |r: &mut R| {
+        match rf(r)? {
+            ref a if a.eq(&rtrue_val) => Ok(true),
+            ref a if a.eq(&rfalse_val) => Ok(false),
+            _ => Err(Error::from(BinError::CheckFail))
+        }
+    },
+    move |w: &mut W, i: bool| {
+        wf(w, match i {
+            true => wtrue_val.clone(),
+            false => wfalse_val.clone()
+        })
+    })
+}
