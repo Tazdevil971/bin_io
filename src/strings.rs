@@ -43,7 +43,7 @@ pub fn null_ascii<R: Read, W: Write>()
             false => Err(Error::from(BinError::CheckFail))
         }
     },
-    |w: &mut W, s: String| {
+    |w: &mut W, s: &String| {
         match s.is_ascii() {
             true => write(w, s, null_utf8()),
             false => panic!("String is not ascii")
@@ -89,7 +89,7 @@ pub fn len_ascii<R: Read, W: Write>(len: usize)
             false => Err(Error::from(BinError::CheckFail))
         }
     },
-    move |w: &mut W, s: String| {
+    move |w: &mut W, s: &String| {
         match s.is_ascii() {
             true => write(w, s, len_utf8(len)),
             false => panic!("String is not ascii")
@@ -135,7 +135,7 @@ pub fn null_utf8<R: Read, W: Write>()
         String::from_utf8(s)
             .map_err(|e| Error::from(BinError::from(e)))
     },
-    |w: &mut W, s: String| {
+    |w: &mut W, s: &String| {
 
         w.write_all(&s.as_bytes()[..])
     })
@@ -173,7 +173,7 @@ pub fn len_utf8<R: Read, W: Write>(len: usize)
         String::from_utf8(s)
             .map_err(|e| Error::from(BinError::from(e)))
     },
-    move |w: &mut W, s: String| {
+    move |w: &mut W, s: &String| {
 
         match s.len() == len {
             true => w.write_all(&s.as_bytes()[..]),
@@ -214,7 +214,7 @@ pub fn null_utf16<R: Read, W: Write>()
         String::from_utf16(&s[..])
             .map_err(|e| Error::from(BinError::from(e)))
     },
-    |w: &mut W, s: String| {
+    |w: &mut W, s: &String| {
         for c in s.encode_utf16() {
             w.write_u16::<BigEndian>(c)?;
         }
@@ -252,7 +252,7 @@ pub fn len_utf16<R: Read, W: Write>(len: usize)
         String::from_utf16(&s[..])
             .map_err(|e| Error::from(BinError::from(e)))
     },
-    move |w: &mut W, s: String| {
+    move |w: &mut W, s: &String| {
         match s.len() == len {
             true => {
                 for c in s.encode_utf16() {

@@ -34,7 +34,7 @@
 //!     a: 0x10, b: 0x20
 //! };
 //! 
-//! write(&mut cursor, my_thing.clone(), thing_parser())
+//! write(&mut cursor, &my_thing, thing_parser())
 //!     .unwrap();
 //! 
 //! cursor.set_position(0);
@@ -44,6 +44,14 @@
 //! 
 //! assert_eq!(other_thing, my_thing);
 //! ```
+//! # Big change in 0.2
+//! In 0.2 `bin_io` had a massive change, it now uses 
+//! references while writing, and no longer needs an owned
+//! copy. This meant that some things needed to change
+//! from the last version, but everything should still
+//! work fine (with minor code changes, `seq!` in particular), 
+//! so check out the documentation!
+//! 
 //! # `nom` or `bin_io`?
 //! `bin_io` is at a very early stage of development, so
 //! you might want to prefer `nom` over `bin_io` for its
@@ -83,8 +91,8 @@ pub trait ReadFn<R: Read, I>: Fn(&mut R) -> io::Result<I> { }
 impl<R: Read, I, F: Fn(&mut R) -> io::Result<I>> ReadFn<R, I> for F { }
 
 /// Trait representing a write closure.
-pub trait WriteFn<W: Write, I>: Fn(&mut W, I) -> io::Result<()> { }
-impl<W: Write, I, F: Fn(&mut W, I) -> io::Result<()>> WriteFn<W, I> for F { }
+pub trait WriteFn<W: Write, I>: Fn(&mut W, &I) -> io::Result<()> { }
+impl<W: Write, I, F: Fn(&mut W, &I) -> io::Result<()>> WriteFn<W, I> for F { }
 
 /// Reads from a read/write tuple.
 /// 
@@ -119,13 +127,13 @@ where R: Read, Rf: ReadFn<R, I>, Wf: WriteFn<WriteDummy, I> {
 /// let vec = Vec::new();
 /// let mut cursor = Cursor::new(vec);
 /// 
-/// let val = write(&mut cursor, 0x80, be_u8())
+/// let val = write(&mut cursor, &0x80, be_u8())
 ///     .unwrap();
 /// 
 /// let vec = cursor.into_inner();
 /// assert_eq!(vec[0], 0x80);
 /// ```
-pub fn write<W, Rf, Wf, I>(w: &mut W, i: I, f: (Rf, Wf))
+pub fn write<W, Rf, Wf, I>(w: &mut W, i: &I, f: (Rf, Wf))
 -> io::Result<()> 
 where W: Write, Rf: ReadFn<ReadDummy, I>, Wf: WriteFn<W, I> {
     f.1(w, i)

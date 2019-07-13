@@ -30,7 +30,7 @@ use std::convert::{ TryInto, TryFrom };
 ///     bind(be_u8(), 0x50) =>
 /// );
 /// 
-/// write(&mut cursor, (), a)
+/// write(&mut cursor, &(), a)
 ///     .unwrap();
 /// 
 /// assert_eq!(cursor.get_ref()[0], 0x50);
@@ -49,9 +49,9 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: PartialEq + Clone {
             false => Err(Error::from(BinError::CheckFail))
         }
     },
-    move |w: &mut W, _v: ()| {
+    move |w: &mut W, _v: &()| {
 
-        wf(w, wi.clone())
+        wf(w, &wi)
     })
 }
 
@@ -86,7 +86,7 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: PartialEq + Clone {
 ///     skip(be_u8(), 0x50) =>
 /// );
 /// 
-/// write(&mut cursor, (), a)
+/// write(&mut cursor, &(), a)
 ///     .unwrap();
 /// 
 /// assert_eq!(cursor.get_ref()[0], 0x50);
@@ -101,9 +101,9 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: Clone {
 
         rf(r).map(|_| ())
     },
-    move |w: &mut W, _v: ()| {
+    move |w: &mut W, _v: &()| {
 
-        wf(w, i.clone())
+        wf(w, &i)
     })
 }
 
@@ -138,7 +138,7 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: Clone {
 /// 
 /// let a = count(be_u8(), 3);
 /// 
-/// write(&mut cursor, vec![ 10, 20, 30 ], a)
+/// write(&mut cursor, &vec![ 10, 20, 30 ], a)
 ///     .unwrap();
 /// 
 /// assert_eq!(cursor.get_ref(), &[ 10, 20, 30 ]);
@@ -159,7 +159,7 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I> {
 
         Ok(vec)
     }, 
-    move |w: &mut W, v: Vec<I>| {
+    move |w: &mut W, v: &Vec<I>| {
         
         match c == v.len() {
             true => {
@@ -191,7 +191,7 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I> {
 /// to implement `From<I> for O` and `From<O> for I`!
 pub fn cast<R: Read, W: Write, Rf, Wf, I, O>(f: (Rf, Wf))
 -> (impl ReadFn<R, I>, impl WriteFn<W, I>)
-where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: From<I> + Into<I> {
+where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: From<I> + Into<I>, I: Clone {
 
     let (rf, wf) = f;
     
@@ -199,9 +199,9 @@ where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: From<I> + Into<I> {
         
         Ok(rf(r)?.into())   
     }, 
-    move |w: &mut W, i: I| {
+    move |w: &mut W, i: &I| {
     
-        wf(w, O::from(i))
+        wf(w, &O::from(i.clone()))
     })
 }
 
@@ -244,7 +244,7 @@ where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: From<I> + Into<I> {
 ///     a: be_u8() =>
 ///     b: optional(
 ///         be_u8(),
-///         a != 0
+///         a.to_owned() != 0
 ///     ) =>
 /// );
 /// 
@@ -265,7 +265,7 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I> {
             false => Ok(None)
         }
     },
-    move |w: &mut W, i: Option<I>| {
+    move |w: &mut W, i: &Option<I>| {
         match (i, c) {
             (Some(i), true) => wf(w, i),
             (None, false) => Ok(()),
@@ -310,20 +310,20 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I> {
 ///     a: try_cast(be_u8()) =>
 /// );
 /// 
-/// write(&mut cursor, Unicorn { a: 20 }, a)
+/// write(&mut cursor, &Unicorn { a: 20 }, a)
 ///     .unwrap();
 /// 
 /// assert_eq!(cursor.get_ref()[0], 20);
 /// 
 /// // Fails to cast!
-/// let err = write(&mut cursor, Unicorn { a: 256 }, a);
+/// let err = write(&mut cursor, &Unicorn { a: 256 }, a);
 /// 
 /// assert!(err.is_err());
 /// 
 /// ```
 pub fn try_cast<R: Read, W: Write, Rf, Wf, I, O>(f: (Rf, Wf))
 -> (impl ReadFn<R, I>, impl WriteFn<W, I>)
-where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: TryFrom<I> + TryInto<I> {
+where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: TryFrom<I> + TryInto<I>, I: Clone {
 
     let (rf, wf) = f;
     
@@ -333,9 +333,9 @@ where Rf: ReadFn<R, O>, Wf: WriteFn<W, O>, O: TryFrom<I> + TryInto<I> {
             .try_into()
             .map_err(|_| Error::from(BinError::CastFail))
     }, 
-    move |w: &mut W, i: I| {
+    move |w: &mut W, i: &I| {
     
-        wf(w, O::try_from(i)
+        wf(w, &O::try_from(i.clone())
             .map_err(|_| Error::from(BinError::CastFail))?
         )
     })
@@ -381,10 +381,10 @@ where Rf: ReadFn<R, I>, Wf: WriteFn<W, I>, I: PartialEq + Clone {
             _ => Err(Error::from(BinError::CheckFail))
         }
     },
-    move |w: &mut W, i: bool| {
+    move |w: &mut W, i: &bool| {
         wf(w, match i {
-            true => wtrue_val.clone(),
-            false => wfalse_val.clone()
+            true => &wtrue_val,
+            false => &wfalse_val
         })
     })
 }

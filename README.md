@@ -12,6 +12,14 @@ facilities at the same time, with fewer code.
 ## Usage
 Add `bin_io = "0.1"` to your Cargo.toml
 
+## Big change in 0.2
+In 0.2 `bin_io` had a massive change, it now uses 
+references while writing, and no longer needs an owned
+copy. This meant that some things needed to change
+from the last version, but everything should still
+work fine (with minor code changes, `seq!` in particular), 
+so check out the documentation!
+
 ## Example
 ```rust
 use std::io::Cursor;

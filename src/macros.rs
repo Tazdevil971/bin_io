@@ -13,7 +13,43 @@
 ///     b1: be_u8 =>
 /// )
 /// ```
+/// While reading variables used are owned copies of the
+/// values, while writing the values are references to 
+/// those values, so it's necessary that you always use
+/// either as_ref() or to_owned() to collapse the two
+/// states into a reference or an owned copy.
+/// ```
+/// use std::io::Cursor;
+/// use bin_io::{ seq, count, read };
+/// use bin_io::numbers::{ be_u8, be_i16 };
 /// 
+/// #[derive(Debug, PartialEq, Eq)]
+/// struct Foo {
+///     a: Vec<i16>
+/// }
+/// 
+/// /* Won't compile
+/// let tuple = seq!(
+///     Foo { a },
+///     len: be_u8(), a.len() as _ =>
+///     a: count(be_i16(), len as usize) =>
+/// );
+/// */
+/// 
+/// let tuple = seq!(
+///     Foo { a },
+///     len: be_u8(), a.len() as _ =>
+///     a: count(be_i16(), len.to_owned() as usize) =>
+/// );
+/// 
+/// let mut vec = vec![ 0x02, 0x00, 0x01, 0x00, 0x02 ];
+/// let mut cursor = Cursor::new(&mut vec);
+/// 
+/// let foo = read(&mut cursor, tuple)
+///     .unwrap();
+/// 
+/// assert_eq!(foo, Foo { a: vec![ 1, 2 ] });
+/// ```
 /// # Examples
 /// ```
 /// use std::io::Cursor;
@@ -40,7 +76,7 @@
 ///     a: be_u8() =>
 ///     b: le_u16() =>
 ///     skip(be_u16(), 1557) =>
-///     c: count(be_i32(), b as usize) =>
+///     c: count(be_i32(), b.to_owned() as usize) =>
 ///     d: null_utf16() =>
 /// );
 /// 
@@ -110,7 +146,7 @@
 ///     // Give the field a default value or some expression to initialize it
 ///     // Remember: this value is only used during writing and not reading
 ///     length: be_u8(), a.len() as u8 =>
-///     a: count(be_i16(), length as _) =>
+///     a: count(be_i16(), length.to_owned() as _) =>
 /// );
 /// 
 /// let vec = vec![ 0x2, 0x0, 0x50, 0x0, 0x60 ];
@@ -129,7 +165,7 @@ macro_rules! seq {
                 $($field),*
             }, r, $($rest)*)
         },
-        |w: &mut _, v: _| {
+        |w: &mut _, v: &_| {
             let $($ty)::* {
                 $($field),*
             } = v;
@@ -144,7 +180,7 @@ macro_rules! seq {
                 $($field),*
             ), r, $($rest)*)
         },
-        |w: &mut _, v: _| {
+        |w: &mut _, v: &_| {
             let $($ty)::* (
                 $($field),*
             ) = v;
@@ -157,7 +193,7 @@ macro_rules! seq {
         (|r: &mut _| {
             $crate::seq!(__impl r $($ty)::*, r, $($rest)*)
         },
-        |w: &mut _, v: _| {
+        |w: &mut _, v: &_| {
             let $($ty)::* = v;
             $crate::seq!(__impl w w, $($rest)*);
             Ok(())
@@ -168,7 +204,7 @@ macro_rules! seq {
         (|r: &mut _| {
             $crate::seq!(__impl r (), r, $($rest)*)
         },
-        |w: &mut _, v: _| {
+        |w: &mut _, v: &_| {
             $crate::seq!(__impl w w, $($rest)*);
             Ok(())
         })
@@ -210,7 +246,7 @@ macro_rules! seq {
 
     (__impl w $w:ident, $name:ident : $expr:expr, $def:expr => $($rest:tt)*) => {
         {
-            let $name = $def;
+            let $name = &$def;
             $crate::write($w, $name, $expr)?;
             $crate::seq!(__impl w $w, $($rest)*);
         }
@@ -218,7 +254,7 @@ macro_rules! seq {
 
     (__impl w $w:ident, $expr:expr => $($rest:tt)*) => {
         {
-            $crate::write($w, (), $expr)?;
+            $crate::write($w, &(), $expr)?;
             $crate::seq!(__impl w $w, $($rest)*);
         }
     };
