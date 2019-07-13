@@ -10,7 +10,7 @@ it aims at providing both reading *and* writing
 facilities at the same time, with fewer code.
 
 ## Usage
-Add `bin_io = "0.1"` to your Cargo.toml
+Add `bin_io = "0.2"` to your Cargo.toml
 
 ## Big change in 0.2
 In 0.2 `bin_io` had a massive change, it now uses 
