@@ -26,7 +26,7 @@ use std::io::Cursor;
 use bin_io::{ boilerplate, seq, read, write };
 use bin_io::numbers::{ be_u8, be_u16 };
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 struct Thing {
     a: u8,
     b: u16
@@ -49,7 +49,7 @@ let my_thing = Thing {
     a: 0x10, b: 0x20
 };
 
-write(&mut cursor, my_thing.clone(), thing_parser())
+write(&mut cursor, &my_thing, thing_parser())
     .unwrap();
 
 cursor.set_position(0);
